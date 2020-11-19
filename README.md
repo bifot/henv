@@ -1,6 +1,8 @@
-# henv
+# encev
+
+🔐 simple util for encrypting .env files.
 
 ```sh
-$ npx henv .env.prod -p qwerty
-$ npx henv .env.prod.enc -p qwerty
+$ npx encev .env.prod -p qwerty
+$ npx encev .env.prod.enc -p qwerty
 ```
