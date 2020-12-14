@@ -8,11 +8,13 @@
   },
   "keywords": [],
   "bin": {
-    "encev": "./index.js"
+    "encev": "./index.js",
+    "henv": "./index.js"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "commander": "^6.2.1",
     "simple-encryptor": "^4.0.0"
   }
 }

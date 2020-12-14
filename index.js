@@ -1,22 +1,44 @@
 #!/usr/bin/env node
 
 const fs = require("fs");
+const {program} = require("commander");
 const encryptor = require("simple-encryptor");
+const utils = require("./utils");
 
-// simple-encryptor requires password with this min length
 const MIN_PASSWORD_LENGTH = 16;
+const REGEX = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$/;
 
-let [,, input,, password] = process.argv;
-let data = fs.readFileSync(input, "utf8");
+program
+  .version("1.0.0")
+  .option("-d, --deprecated", "use deprecated mechanism for crypto")
+  .option("-p, --password <password>", "password for encrypt/decrypt")
+  .parse(process.argv);
 
-if (password.length < MIN_PASSWORD_LENGTH) {
-  password += Array(MIN_PASSWORD_LENGTH - password.length).fill("0");
+const [filepath] = program.args;
+
+if (!fs.existsSync(filepath)) {
+  return console.error("Hm... Can't find item by this filepath");
 }
 
-const {encrypt, decrypt} = encryptor(password);
+const content = fs.readFileSync(filepath, "utf8");
+const methodName = REGEX.test(content) ? "decrypt" : "encrypt";
 
-if (input.endsWith(".enc")) {
-  fs.writeFileSync(input.replace(".enc", ""), decrypt(data));
+let result;
+
+if (program.deprecated) {
+  result = utils[methodName](content, program.password);
 } else {
-  fs.writeFileSync(`${input}.enc`, encrypt(data));
+  if (program.password.length < MIN_PASSWORD_LENGTH) {
+    program.password += Array(MIN_PASSWORD_LENGTH - program.password.length)
+      .fill("0")
+      .join("");
+  }
+
+  result = encryptor(program.password)[methodName](content);
 }
+
+if (result === null) {
+  return console.error(`Ooops! Can't ${methodName} your file, maybe it's incorrect password?`);
+}
+
+fs.writeFileSync(filepath, result);
